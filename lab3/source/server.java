@@ -7,8 +7,6 @@ import java.util.stream.Stream;
 import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.Objects;
-import java.time.ZonedDateTime;
-import java.time.ZoneId;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -17,13 +15,7 @@ import com.sun.net.httpserver.HttpServer;
 public class Test {
 
     private static final String HELLO_WORLD_RESPONSE = "Hello World from java!";
-    private static final String CMD_PARAM = "cmd";
     private static final String STR_PARAM = "str";
-    private static final String TIME_PARAM_VALUE = "time";
-    private static final String REV_PARAM_VALUE = "rev";
-
-    private static final String DATE_TIME_PATTERN = "HH:mm:ss";
-    private static final String TIME_ZONE = "UTC+01:00";
 
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(4080), 0);
@@ -47,28 +39,25 @@ public class Test {
 
     private static String getResponse(String query) {
         Map<String, String> queryMap = queryToMap(query);
-        if (!queryMap.containsKey(CMD_PARAM)) {
+        if (!queryMap.containsKey(STR_PARAM)) {
             return HELLO_WORLD_RESPONSE;
         }
-        String cmdParamValue = queryMap.get(CMD_PARAM);
-        switch (cmdParamValue) {
-            case TIME_PARAM_VALUE:
-                return getFormattedTime();
-            case REV_PARAM_VALUE:
-                if (!queryMap.containsKey(STR_PARAM)) {
-                    return HELLO_WORLD_RESPONSE;
-                }
-                return new StringBuilder(queryMap.get(STR_PARAM)).reverse().toString();
-            default:
-                return HELLO_WORLD_RESPONSE;
-                
-        }
+        String strParamValue = queryMap.get(STR_PARAM);
+        return buildResponse(strParamValue);
     }
 
-    private static String getFormattedTime() {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DATE_TIME_PATTERN);
-        ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of(TIME_ZONE));
-        return dateTimeFormatter.format(zonedDateTime);
+    private static String buildResponse(String strParamValue) {
+        StringBuilder sb = new StringBuilder("{\"lowercase\": ");
+        long lowerCaseCount = strParamValue.chars()
+            .filter(Character::isLowerCase)
+            .count();
+        sb.append(lowerCaseCount).append(", \"uppercase\": ");
+        long upperCaseCount = strParamValue.chars()
+            .filter(Character::isUpperCase)
+            .count();
+        sb.append(upperCaseCount);
+        sb.append("}");
+        return sb.toString();
     }
 
     private static Map<String, String> queryToMap(String query) {
