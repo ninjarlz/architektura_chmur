@@ -55,9 +55,20 @@ public class Test {
         long upperCaseCount = strParamValue.chars()
             .filter(Character::isUpperCase)
             .count();
-        sb.append(upperCaseCount);
-        sb.append("}");
+        sb.append(upperCaseCount).append(", \"digits\": ");
+        long digitCount = strParamValue.chars()
+            .filter(Character::isDigit)
+            .count();
+        sb.append(digitCount).append(", \"special\": ");
+        long specialCount = strParamValue.chars()
+            .filter(Test::isSpecialCharacter)
+            .count();
+        sb.append(specialCount).append("}");
         return sb.toString();
+    }
+
+    private static boolean isSpecialCharacter(int ch) {
+        return !Character.isDigit(ch) && !Character.isLetter(ch);
     }
 
     private static Map<String, String> queryToMap(String query) {
